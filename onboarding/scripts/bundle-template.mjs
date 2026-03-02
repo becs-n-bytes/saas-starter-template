@@ -60,6 +60,7 @@ async function main() {
   const files = await walk(TEMPLATE_DIR, TEMPLATE_DIR);
   const count = Object.keys(files).length;
   const json = JSON.stringify(files);
+  await fs.mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
   await fs.writeFile(OUTPUT_PATH, json, 'utf-8');
   const sizeKB = (Buffer.byteLength(json, 'utf-8') / 1024).toFixed(1);
   console.log(`Bundled ${count} files (${sizeKB} KB) -> ${OUTPUT_PATH}`);
