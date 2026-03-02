@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { generateProjectZip } from '@/lib/generate-zip';
 import {
   Download,
   CheckCircle2,
@@ -36,18 +37,7 @@ export function ReviewDownload() {
   async function handleDownload() {
     setDownloading(true);
     try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Generation failed');
-      }
-
-      const blob = await res.blob();
+      const blob = await generateProjectZip(config);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
