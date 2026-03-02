@@ -27,8 +27,6 @@ yarn-error.log*
 # vercel
 .vercel
 
-# generated template bundle
-public/template-bundle.json
 
 # typescript
 *.tsbuildinfo
