@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { sendWelcomeEmailAction } from '@/lib/email/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,6 +64,8 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
+
+    sendWelcomeEmailAction({ to: parsed.data.email, name: parsed.data.name });
 
     setConfirmEmail(true);
     setLoading(false);

@@ -2,4 +2,24 @@ import 'server-only';
 
 import { Resend } from 'resend';
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+
+/**
+ * Lazy-initialized Resend client.
+ * Avoids build-time errors when RESEND_API_KEY is not set.
+ */
+function getResend(): Resend {
+  if (!_resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not set');
+    }
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
+
+export const resend = new Proxy({} as Resend, {
+  get(_, prop) {
+    return (getResend() as unknown as Record<string | symbol, unknown>)[prop];
+  },
+});

@@ -1,6 +1,7 @@
 'use client';
 
-import { Loader2, ExternalLink } from 'lucide-react';
+import { useTransition } from 'react';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { useEntitlement } from '@/hooks/use-entitlement';
 import { createPortalSession, createCheckoutSession } from '@/lib/stripe/actions';
@@ -19,8 +20,9 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function BillingPage() {
-  const { user, loading: userLoading } = useUser();
+  const { loading: userLoading } = useUser();
   const { data: entitlement, isLoading: entitlementLoading } = useEntitlement();
+  const [isPending, startTransition] = useTransition();
 
   if (userLoading || entitlementLoading) {
     return (
@@ -107,24 +109,29 @@ export default function BillingPage() {
           </CardContent>
           <CardFooter className="flex gap-3 border-t px-6 py-4">
             {entitlement?.status === 'subscribed' && (
-              <form action={createPortalSession}>
-                <Button type="submit" variant="outline">
+              <form action={() => startTransition(() => createPortalSession())}>
+                <Button type="submit" variant="outline" disabled={isPending}>
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Manage Subscription
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                  {!isPending && <ExternalLink className="ml-2 h-4 w-4" />}
                 </Button>
               </form>
             )}
             {entitlement?.status === 'free' && (
               <Button
+                disabled={isPending}
                 onClick={() => {
                   const proPlan = billingConfig.plans.find(
                     (p) => p.id === 'pro'
                   );
                   if (proPlan?.stripePriceId.monthly) {
-                    createCheckoutSession(proPlan.stripePriceId.monthly);
+                    startTransition(() =>
+                      createCheckoutSession(proPlan.stripePriceId.monthly)
+                    );
                   }
                 }}
               >
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Upgrade to Pro
               </Button>
             )}
@@ -161,12 +168,16 @@ export default function BillingPage() {
                     </div>
                     <Button
                       size="sm"
+                      disabled={isPending}
                       onClick={() => {
                         if (plan.stripePriceId.monthly) {
-                          createCheckoutSession(plan.stripePriceId.monthly);
+                          startTransition(() =>
+                            createCheckoutSession(plan.stripePriceId.monthly)
+                          );
                         }
                       }}
                     >
+                      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Subscribe
                     </Button>
                   </div>

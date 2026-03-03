@@ -3,6 +3,7 @@ import 'server-only';
 import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe/client';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendReceiptEmail } from '@/lib/email/send';
 
 /**
  * Handles all Stripe webhook events and syncs billing state to Supabase.
@@ -73,6 +74,24 @@ export async function handleWebhookEvent(event: Stripe.Event) {
           });
         }
       }
+
+      // Send receipt email (fire-and-forget, don't block webhook response)
+      if (session.customer_details?.email && session.amount_total) {
+        const productName =
+          session.mode === 'subscription' ? 'Subscription' : 'Purchase';
+        sendReceiptEmail({
+          to: session.customer_details.email,
+          customerName:
+            session.customer_details.name ||
+            session.customer_details.email,
+          productName,
+          amount: session.amount_total,
+          currency: (session.currency ?? 'usd').toUpperCase(),
+        }).catch((err) =>
+          console.error('Failed to send receipt email:', err)
+        );
+      }
+
       break;
     }
 

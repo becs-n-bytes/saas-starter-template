@@ -16,7 +16,6 @@ import {
 import { Logo } from '@/components/shared/logo';
 import { UserNav } from '@/components/app/user-nav';
 import { sidebarNav } from '@/config/nav';
-import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
   const pathname = usePathname();

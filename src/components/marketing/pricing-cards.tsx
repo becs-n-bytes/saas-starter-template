@@ -103,7 +103,13 @@ export function PricingCards() {
                   variant={plan.highlighted ? 'default' : 'outline'}
                   asChild
                 >
-                  <Link href={isFree ? '/signup' : '/signup'}>
+                  <Link
+                    href={
+                      isFree
+                        ? '/signup'
+                        : `/signup?plan=${plan.id}&interval=${interval}`
+                    }
+                  >
                     {isFree ? 'Get Started' : 'Subscribe'}
                   </Link>
                 </Button>
@@ -134,7 +140,7 @@ export function PricingCards() {
                 </CardHeader>
                 <CardFooter>
                   <Button className="w-full" asChild>
-                    <Link href="/signup">Buy Now</Link>
+                    <Link href={`/signup?product=${product.id}`}>Buy Now</Link>
                   </Button>
                 </CardFooter>
               </Card>
