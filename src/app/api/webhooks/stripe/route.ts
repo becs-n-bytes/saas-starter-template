@@ -13,22 +13,29 @@ export async function POST(request: Request) {
     );
   }
 
+  let event;
   try {
-    const event = stripe.webhooks.constructEvent(
+    event = stripe.webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-
-    await handleWebhookEvent(event);
-
-    return NextResponse.json({ received: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`Stripe webhook error: ${message}`);
+    console.error(`Stripe webhook signature verification failed: ${message}`);
     return NextResponse.json(
-      { error: `Webhook Error: ${message}` },
+      { error: `Webhook signature verification failed` },
       { status: 400 }
     );
   }
+
+  try {
+    await handleWebhookEvent(event);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`Stripe webhook handler error: ${message}`);
+    // Return 200 to prevent Stripe from retrying on non-critical handler errors
+  }
+
+  return NextResponse.json({ received: true });
 }
